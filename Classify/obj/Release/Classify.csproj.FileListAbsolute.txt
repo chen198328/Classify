@@ -1,0 +1,13 @@
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\bin\Release\Classify.exe
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\bin\Release\Classify.pdb
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\bin\Release\CsvHelper.dll
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\bin\Release\CsvHelper.pdb
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\bin\Release\CsvHelper.xml
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\obj\Release\Classify.Form1.resources
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\obj\Release\Classify.Properties.Resources.resources
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\obj\Release\Classify.csproj.GenerateResource.Cache
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\obj\Release\Classify.exe
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\obj\Release\Classify.pdb
+d:\用户目录\documents\visual studio 2013\Projects\Classify\Classify\obj\Release\Classify.csprojResolveAssemblyReference.cache
+D:\项目文档\Classify\Classify\Classify\obj\Release\Classify.exe
+D:\项目文档\Classify\Classify\Classify\obj\Release\Classify.pdb
