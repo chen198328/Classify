@@ -25,6 +25,7 @@ namespace Classify
         ///参考文献数量
         /// </summary>
         public int NR { set; get; }
+        public string DocumentType { set; get; }
         public Paper()
         {
             References = new List<string>();
@@ -69,12 +70,23 @@ namespace Classify
                         case "UT":
                             paper.UT = line.Substring(2).Trim();
                             break;
+                        case "DT":
+                            if (string.IsNullOrEmpty(paper.DocumentType))
+                            {
+                                paper.DocumentType = line.Substring(2).Trim();
+                            }
+                            else
+                            {
+                                paper.DocumentType += ";" + line.Substring(2).Trim();
+                            }
+                            break;
                         default:
                             break;
 
                     }
 
                 }
+                paper.NR = paper.References.Count;
                 return papers;
             }
         }
