@@ -20,3 +20,4 @@ D:\项目文档\Classify\Classify\Classify\obj\Release\Classify.csprojResolveAss
 D:\项目文档\Classify\Classify\Classify\obj\Release\Classify.Main.resources
 D:\项目文档\Classify\Classify\Classify\obj\Release\Classify.Properties.Resources.resources
 D:\项目文档\Classify\Classify\Classify\obj\Release\Classify.csproj.GenerateResource.Cache
+D:\项目文档\Classify\Classify\Classify\bin\Release\Classify.exe.config

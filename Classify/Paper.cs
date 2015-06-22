@@ -25,10 +25,15 @@ namespace Classify
         ///参考文献数量
         /// </summary>
         public int NR { set; get; }
+        /// <summary>
+        /// 新规则分到多个学科 
+        /// </summary>
+        public List<string> SubjectList { set; get; }
         public string DocumentType { set; get; }
         public Paper()
         {
             References = new List<string>();
+            SubjectList = new List<string>();
         }
         public static List<Paper> ReadWos(string filename)
         {

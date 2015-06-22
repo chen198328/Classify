@@ -18,7 +18,6 @@ namespace Classify
         {
             InitializeComponent();
         }
-
         public List<Paper> papers = new List<Paper>();
         //Dictionary<string, string> subjects = new Dictionary<string, string>();
         NameValueCollection subjects = new NameValueCollection();
@@ -29,45 +28,93 @@ namespace Classify
             {
                 cbbPapers.Items.Clear();
                 papers.Clear();
-                foreach (var filename in openFileDialog_paper.FileNames)
+                Action<int> updatecount = (count) =>
                 {
-                    try
+                    lblPaperCount.Text = count.ToString();
+                };
+                Action<string> addfiles = (filename) =>
+                {
+                    cbbPapers.Items.Add(filename);
+                };
+                Action<bool> changestate = (isstate) =>
+                {
+
+                    UseWaitCursor = isstate;
+                    btnOpenPaper.Enabled = !isstate;
+                };
+                Task task = new Task(() =>
+                {
+                    this.Invoke(changestate, true);
+                    foreach (var filename in openFileDialog_paper.FileNames)
                     {
                         papers.AddRange(Paper.ReadWos(filename));
-                        cbbPapers.Items.Add(filename);
+                        this.BeginInvoke(addfiles, filename);
+                        this.BeginInvoke(updatecount, papers.Count);
+
                     }
-                    catch (Exception ex)
+                    this.Invoke(changestate, false);
+                });
+                task.Start();
+                task.ContinueWith(t =>
+                {
+                    if (t.Exception != null)
                     {
+                        subjects.Clear();
+                        cbbPapers.Items.Clear();
                         MessageBox.Show("Error! Please input the correct format file");
-                        break;
                     }
-                }
+                });
             }
             if (cbbPapers.Items.Count > 0)
                 cbbPapers.SelectedIndex = 0;
-            lblPaperCount.Text = papers.Count.ToString();
         }
 
         private void btnOpenJounal_Click(object sender, EventArgs e)
         {
             openFileDialog_journal.ShowDialog();
             string filename = openFileDialog_journal.FileName;
+
+
             if (!string.IsNullOrEmpty(filename))
             {
-                txtClass.Text = filename;
+                txtJournal.Text = filename;
                 subjects.Clear();
-                try
+                Action<bool> changestate = (isstate) =>
                 {
-                    //subjects = Combine(subjects, GetSubjects(filename));
-                    subjects = GetSubjects(filename);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show("Error! Please input the correct format file");
-                }
-            }
 
-            lblJournalCount.Text = subjects.Keys.Count.ToString();
+                    UseWaitCursor = isstate;
+                    btnOpenJournal.Enabled = !isstate;
+                };
+                Action<int> updatecount = (count) =>
+                {
+                    lblJournalCount.Text = count.ToString();
+                };
+                Action<string> addfile = (file) =>
+                {
+                    txtJournal.Text = file;
+                };
+                Task task = new Task(() =>
+                {
+                    this.Invoke(changestate, true);
+                    subjects = GetSubjects(filename);
+                    this.Invoke(changestate, false);
+                });
+                task.Start();
+                task.ContinueWith(t =>
+                {
+                    if (t.Exception != null)
+                    {
+                        subjects.Clear();
+                        this.Invoke(addfile, null);
+                        MessageBox.Show("Error! Please input the correct format file");
+                    }
+                    else
+                    {
+                        this.Invoke(addfile, filename);
+                        this.BeginInvoke(updatecount, subjects.Keys.Count);
+                    }
+                });
+            }
         }
         NameValueCollection GetSubjects(string filename)
         {
@@ -82,7 +129,23 @@ namespace Classify
                     string subject = csv.GetField("Subject");
                     if (!string.IsNullOrEmpty(journal) && !string.IsNullOrEmpty(subject))
                     {
-                        subjects.Add(journal, subject);
+                        bool isexist = false;
+                        if (!subjects.HasKeys() || subjects.GetValues(journal) == null)
+                        {
+                            subjects.Add(journal, subject);
+                        }
+                        foreach (var s in subjects.GetValues(journal))
+                        {
+                            if (s.ToLower() == subject.ToLower())
+                            {
+                                isexist = true;
+                                break;
+                            }
+                        }
+                        if (!isexist)
+                        {
+                            subjects.Add(journal, subject);
+                        }
                     }
                 }
             }
@@ -130,6 +193,11 @@ namespace Classify
             {
                 lblMessage.Text = message;
             };
+            Action<bool> changestate = (isstate) =>
+            {
+                UseWaitCursor = isstate;
+                btnStart.Enabled = !isstate;
+            };
             Action<List<Paper>> Save = (paper) =>
             {
                 folderBrowserDialog.ShowDialog();
@@ -143,8 +211,16 @@ namespace Classify
 
             };
             string keyword = txtKey.Text.ToLower();
+            int minReferenceCount = 0;
+            int.TryParse(txtMinReferenceCount.Text.Trim(), out minReferenceCount);
+            float ratio = 0f;
+            float.TryParse(txtRatioSecendClass.Text.Trim(), out ratio);
+
+            float _ratio = 0f;
+            float.TryParse(txtRatioThirdClass.Text.Trim(), out _ratio);
             Task task = new Task(() =>
             {
+                this.Invoke(changestate, true);
                 int index = 0;
                 foreach (var paper in papers)
                 {
@@ -201,6 +277,9 @@ namespace Classify
                     }
                     var maxvalue = subject.Max(x => x.Value);
                     var _maxvalue = 0;
+                    //序号
+                    int index_ = 0;
+                    int count_ = 0;
                     foreach (var key in subject.OrderByDescending(x => x.Value))
                     {
                         if ((key.Key.ToLower() == keyword || key.Key.ToLower() == "null") && key.Value == maxvalue)
@@ -227,6 +306,47 @@ namespace Classify
                             else if (key.Value == _maxvalue)
                             {
                                 paper._Subject += ";" + key.Key;
+                            }
+
+                            if ((minReferenceCount > 0 && paper.NR > minReferenceCount) || minReferenceCount == 0)
+                            {
+                                if (count_ != 0 && key.Value == count_)
+                                {
+                                    paper.SubjectList.Add(key.Key);
+                                }
+                                float tempratio = 0.0f;
+                                switch (index_)
+                                {
+                                    case 0:
+                                        paper.SubjectList.Add(key.Key);
+                                        count_ = key.Value;
+                                        index_++;
+                                        break;
+                                    case 1:
+                                        tempratio = (count_ * 1f / key.Value);
+                                        if (tempratio <= ratio)
+                                        {
+                                            paper.SubjectList.Add(key.Key);
+                                            index_++;
+                                        }
+                                        else
+                                        {
+                                            index_ += 2;
+                                        }
+
+                                        break;
+                                    case 2:
+                                        tempratio = (count_ * 1f / key.Value);
+                                        if (tempratio <= _ratio)
+                                        {
+                                            paper.SubjectList.Add(key.Key);
+
+                                        }
+                                        index_++;
+                                        break;
+                                    default:
+                                        break;
+                                }
                             }
                         }
                     }
@@ -258,10 +378,7 @@ namespace Classify
                     {
                         paper._Subject = paper.Subject;
                     }
-                    if (string.IsNullOrEmpty(paper._Subject))
-                    {
-                        paper.Tag = "没有参考文献";
-                    }
+                    if (paper._Subject == null) { }
                     else if (paper._Subject.Contains(";"))
                     {
                         paper.Tag = "待人工分";
@@ -270,7 +387,12 @@ namespace Classify
                     {
                         paper.Tag = "分到单学科";
                     }
+                    if (paper.NR == 0)
+                    {
+                        paper.Tag = "没有参考文献";
+                    }
                 }
+                this.Invoke(changestate, false);
             });
             task.Start();
             task.ContinueWith(t =>
@@ -292,7 +414,7 @@ namespace Classify
 
         }
 
-        private void Main_Load(object sender, EventArgs e)
+        private void txtClass_TextChanged(object sender, EventArgs e)
         {
 
         }
