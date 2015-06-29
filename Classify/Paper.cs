@@ -15,25 +15,14 @@ namespace Classify
         /// 多个学科使用;
         /// </summary>
         public string Subject { set; get; }
-        public string _Subject { set; get; }
         public string Subjects { set; get; }
-        /// <summary>
-        /// 标签 分到单学科  待人工分  无参考文献  
-        /// </summary>
-        public string Tag { set; get; }
         /// <summary>
         ///参考文献数量
         /// </summary>
         public int NR { set; get; }
-        /// <summary>
-        /// 新规则分到多个学科 
-        /// </summary>
-        public List<string> SubjectList { set; get; }
-        public string DocumentType { set; get; }
         public Paper()
         {
             References = new List<string>();
-            SubjectList = new List<string>();
         }
         public static List<Paper> ReadWos(string filename)
         {
@@ -75,23 +64,12 @@ namespace Classify
                         case "UT":
                             paper.UT = line.Substring(2).Trim();
                             break;
-                        case "DT":
-                            if (string.IsNullOrEmpty(paper.DocumentType))
-                            {
-                                paper.DocumentType = line.Substring(2).Trim();
-                            }
-                            else
-                            {
-                                paper.DocumentType += ";" + line.Substring(2).Trim();
-                            }
-                            break;
                         default:
                             break;
 
                     }
 
                 }
-                paper.NR = paper.References.Count;
                 return papers;
             }
         }
